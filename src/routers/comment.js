@@ -4,6 +4,26 @@ const express = require("express");
 
 const router = express.Router();
 
+router.get("/:id/likes", async (req, res) => {
+    const {id} = req.params;
+
+    const data = await prisma.commentLike.findMany({
+        where: {
+            commentId: Number(id),
+        },
+        include: {
+            user: {
+                include: {
+                    followers: true,
+                    following: true
+                }
+            }
+        }
+    })
+
+    res.json(data)
+})
+
 router.post("/", auth, async(req, res) => {
     const {content, postId} = req.body;
 
@@ -23,6 +43,34 @@ router.post("/", auth, async(req, res) => {
     comment.user = user;
 
     res.json(comment);
+})
+
+router.post("/:id/like", auth, async (req, res) => {
+    const {id} = req.params;
+    const {user} = res.locals;
+
+    const like = await prisma.commentLike.create({
+        data: {
+            commentId: Number(id),
+            userId: Number(user.id)
+        }
+    })
+
+    res.json({like})
+})
+
+router.delete("/:id/unlike", auth, async(req, res) => {
+    const {id} = req.params;
+    const {user} = res.locals;
+
+    await prisma.commentLike.deleteMany({
+        where: {
+            commentId: Number(id),
+            userId: Number(user.id)
+        }
+    });
+
+    res.json({message: `Unlike comment ${id}`})
 })
 
 router.delete("/:id", auth, isOwner("comment"), async (req, res) => {
