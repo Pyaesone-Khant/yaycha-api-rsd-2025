@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
 
 async function UserSeeder() {
-    const password = await bcrypt.hash("password", 10);
+    const password = await bcrypt.hash("asdfghjkl", 10);
     console.log("User seeding start . . .");
 
     for (let i = 0; i < 10; i++) {

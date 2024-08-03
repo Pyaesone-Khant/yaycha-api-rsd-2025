@@ -1,5 +1,6 @@
 const express = require("express")
-const { prisma } = require("@/libs/prisma")
+const { prisma } = require("@/libs/prisma");
+const { auth, isOwner } = require("@/middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -14,7 +15,9 @@ router.get("/", async (req, res) => {
             take: 20
         })
 
-        res.json(data)
+        setTimeout(() => {
+            res.json(data)
+        }, 2000);
     } catch (error) {
         res.status(500).json({ error })
     }
@@ -41,7 +44,38 @@ router.get("/:id", async (req, res) => {
     }
 })
 
-router.delete("/:id", async (req, res) => {
+router.post("/", auth, async (req, res) => {
+    const {content} = req.body;
+
+    if(!content){
+        return res.status(400).json({message: "Content is required!"});
+    }
+
+    const {user} = res.locals;
+
+    const post = await prisma.post.create({
+        data: {
+            content,
+            userId: user.id
+        }
+    });
+
+    const data = await prisma.post.findUnique({
+        where: {id: Number(post.id)},
+        include: {
+            user: true,
+            comments: {
+                include: {
+                    user: true
+                }
+            }
+        }
+    })
+
+    res.json(data)
+})
+
+router.delete("/:id", auth, isOwner("post"), async (req, res) => {
     const { id } = req.params;
 
     try {

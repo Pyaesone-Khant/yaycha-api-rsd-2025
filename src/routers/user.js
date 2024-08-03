@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const { prisma } = require("@/libs/prisma");
+const { auth } = require("@/middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -13,13 +14,28 @@ router.get("/", async (req, res) => {
     }
 })
 
+router.get("/verify", auth, async(req, res) => {
+    const {user} = res.locals;
+    res.json(user);
+})
+
 router.get("/:id", async (req, res) => {
     const { id } = req.params;
     try {
         const data = await prisma.user.findUnique({
             where: {
                 id: Number(id)
-            }
+            },
+            select: {
+                name: true,
+                username: true,
+                bio: true,
+                posts: {
+                    include: {
+                        user: true
+                    }
+                }
+            },
         });
         res.json(data);
     } catch (error) {

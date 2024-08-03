@@ -16,7 +16,7 @@ model User {
     username String
     bio      String?
     password String
-    post     Post[]
+    posts    Post[]
     comments Comment[]
     created  DateTime  @default(now())
 }
