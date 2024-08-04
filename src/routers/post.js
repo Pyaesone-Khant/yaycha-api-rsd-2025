@@ -102,6 +102,8 @@ router.post("/:id/like", auth, async (req, res) => {
     const {id} = req.params;
     const {user} = res.locals;
 
+
+
     const like = await prisma.postLike.create({
         data: {
             postId: Number(id),
@@ -109,7 +111,7 @@ router.post("/:id/like", auth, async (req, res) => {
         }
     })
 
-    req.json({like})
+    res.json({like})
 })
 
 router.delete("/:id/unlike", auth, async (req, res) => {
@@ -123,7 +125,7 @@ router.delete("/:id/unlike", auth, async (req, res) => {
         }
     });
     
-    res.json({msg: `Unlike post ${id}.`})
+    res.json({message: `Unlike post ${id}.`})
 })
 
 router.delete("/:id", auth, isOwner("post"), async (req, res) => {
