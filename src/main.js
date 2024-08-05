@@ -7,6 +7,7 @@ const { PostRouter } = require("@/routers/post");
 const { UserRouter } = require("@/routers/user");
 const { AuthRouter } = require("@/routers/auth");
 const { CommentRouter } = require("./routers/comment");
+const { SearchRouter } = require("./routers/search");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/auth", AuthRouter)
 app.use("/api/users", UserRouter)
 app.use("/api/posts", PostRouter)
 app.use("/api/comments", CommentRouter)
+app.use("/api/search", SearchRouter)
 
 app.get("/api/info", (req, res) => {
     res.json({
