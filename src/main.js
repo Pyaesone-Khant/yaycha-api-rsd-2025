@@ -6,8 +6,8 @@ const { prisma } = require("@/libs/prisma");
 const { PostRouter } = require("@/routers/post");
 const { UserRouter } = require("@/routers/user");
 const { AuthRouter } = require("@/routers/auth");
-const { CommentRouter } = require("./routers/comment");
-const { SearchRouter } = require("./routers/search");
+const { CommentRouter } = require("@/routers/comment");
+const { SearchRouter } = require("@/routers/search");
 
 const app = express();
 

@@ -15,6 +15,10 @@ router.post("/login", async (req, res) => {
     const user = await prisma.user.findFirst({
         where: {
             username
+        },
+        include: {
+            followers: true,
+            following: true
         }
     })
 

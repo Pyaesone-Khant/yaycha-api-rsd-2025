@@ -110,4 +110,34 @@ router.delete("/:id/unfollow", auth, async (req, res) => {
     res.json({ message: `Unfollowed user ${id}` });
 })
 
+router.get("/following/posts", auth, async (req, res) => {
+    const { user } = res.locals;
+
+    const follow = await prisma.follow.findMany({
+        where: {
+            followerId: Number(user.id)
+        }
+    });
+
+    const followingUserIds = follow.map((user) => user.followingId);
+
+    const data = await prisma.post.findMany({
+        where: {
+            userId: {
+                in: followingUserIds
+            }
+        },
+        include: {
+            user: true,
+            comments: true,
+            likes: true
+        },
+        orderBy: { id: "desc" },
+        take: 20
+    })
+
+    res.json(data)
+
+})
+
 module.exports = { UserRouter: router }
