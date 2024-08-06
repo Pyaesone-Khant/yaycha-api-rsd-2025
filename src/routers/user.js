@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { prisma } = require("@/libs/prisma");
 const { auth } = require("@/middlewares/authMiddleware");
+const { addNoti } = require("./noti");
 
 const router = express.Router();
 
