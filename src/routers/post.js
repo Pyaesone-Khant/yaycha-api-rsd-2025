@@ -1,6 +1,7 @@
 const express = require("express")
 const { prisma } = require("@/libs/prisma");
 const { auth, isOwner } = require("@/middlewares/authMiddleware");
+const { addNoti } = require("./noti");
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get("/", async (req, res) => {
 })
 
 router.get("/:id/likes", async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
     const data = await prisma.postLike.findMany({
         where: {
@@ -68,13 +69,13 @@ router.get("/:id", async (req, res) => {
 })
 
 router.post("/", auth, async (req, res) => {
-    const {content} = req.body;
+    const { content } = req.body;
 
-    if(!content){
-        return res.status(400).json({message: "Content is required!"});
+    if (!content) {
+        return res.status(400).json({ message: "Content is required!" });
     }
 
-    const {user} = res.locals;
+    const { user } = res.locals;
 
     const post = await prisma.post.create({
         data: {
@@ -84,7 +85,7 @@ router.post("/", auth, async (req, res) => {
     });
 
     const data = await prisma.post.findUnique({
-        where: {id: Number(post.id)},
+        where: { id: Number(post.id) },
         include: {
             user: true,
             comments: {
@@ -99,10 +100,8 @@ router.post("/", auth, async (req, res) => {
 })
 
 router.post("/:id/like", auth, async (req, res) => {
-    const {id} = req.params;
-    const {user} = res.locals;
-
-
+    const { id } = req.params;
+    const { user } = res.locals;
 
     const like = await prisma.postLike.create({
         data: {
@@ -111,12 +110,19 @@ router.post("/:id/like", auth, async (req, res) => {
         }
     })
 
-    res.json({like})
+    await addNoti({
+        type: "like",
+        content: "likes your post!",
+        postId: id,
+        userId: user.id
+    })
+
+    res.json({ like })
 })
 
 router.delete("/:id/unlike", auth, async (req, res) => {
-    const {id} = req.params;
-    const {user} = res.locals;
+    const { id } = req.params;
+    const { user } = res.locals;
 
     await prisma.postLike.deleteMany({
         where: {
@@ -124,8 +130,8 @@ router.delete("/:id/unlike", auth, async (req, res) => {
             userId: Number(user.id)
         }
     });
-    
-    res.json({message: `Unlike post ${id}.`})
+
+    res.json({ message: `Unlike post ${id}.` })
 })
 
 router.delete("/:id", auth, isOwner("post"), async (req, res) => {
