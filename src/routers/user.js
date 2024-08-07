@@ -2,7 +2,6 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { prisma } = require("@/libs/prisma");
 const { auth } = require("@/middlewares/authMiddleware");
-const { addNoti } = require("./noti");
 
 const router = express.Router();
 
@@ -28,8 +27,25 @@ router.get("/", async (req, res) => {
 
 router.get("/verify", auth, async (req, res) => {
     const { user } = res.locals;
-    res.json(user);
+
+    const foundedUser = await prisma.user.findUnique({
+        where: {
+            id: Number(user.id)
+        },
+        include: {
+            followers: true,
+            following: true
+        }
+    })
+
+    if (!foundedUser) {
+        return res.status(401).json({ message: "User not found!" })
+    }
+
+    res.json(foundedUser);
 })
+
+
 
 router.get("/:id", async (req, res) => {
     const { id } = req.params;
@@ -55,6 +71,74 @@ router.get("/:id", async (req, res) => {
             },
         });
         res.json(data);
+    } catch (error) {
+        res.status(500).json({ error })
+    }
+})
+
+router.get("/:id/followers", async (req, res) => {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: Number(id)
+        },
+        include: {
+            followers: true
+        }
+    })
+
+    const followerIds = user.followers.map((follower) => follower.followingId);
+
+    const followers = await prisma.user.findMany({
+        where: {
+            id: {
+                in: followerIds
+            }
+        },
+        select: {
+            id: true,
+            name: true,
+            username: true,
+            bio: true,
+            followers: true,
+            following: true
+        }
+    });
+    res.json(followers);
+})
+
+router.get("/:id/following", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: Number(id)
+            },
+            include: {
+                following: true,
+            }
+        })
+
+        const followingIds = user.following.map((follower) => follower.followerId);
+
+        const following = await prisma.user.findMany({
+            where: {
+                id: {
+                    in: followingIds
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                bio: true,
+                followers: true,
+                following: true
+            }
+        });
+        res.json(following);
     } catch (error) {
         res.status(500).json({ error })
     }

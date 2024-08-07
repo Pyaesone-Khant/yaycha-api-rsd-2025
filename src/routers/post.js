@@ -56,7 +56,8 @@ router.get("/:id", async (req, res) => {
                 comments: {
                     include: {
                         user: true,
-                        likes: true
+                        likes: true,
+                        post: true
                     }
                 },
                 likes: true

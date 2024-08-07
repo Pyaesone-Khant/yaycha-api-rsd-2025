@@ -37,32 +37,32 @@ function isOwner(type) {
      * @param {express.NextFunction} next
      */
 
-    return async(req, res, next) => {
+    return async (req, res, next) => {
         const { id } = req.params;
         const { user } = res.locals;
 
-       if(type === "post"){
-        const post = await prisma.post.findUnique({
-            where: {
-                id: Number(id)
-            }
-        })
+        if (type === "post") {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: Number(id)
+                }
+            })
 
-        if(post.userId == user.id) return next();
-       }
+            if (post.userId == user.id) return next();
+        }
 
-       if(type === "comment"){
-        const comment = await prisma.comment.findUnique({
-            where: {id: Number(id)},
-            include: {
-                post: true,
-            }
-        })
+        if (type === "comment") {
+            const comment = await prisma.comment.findUnique({
+                where: { id: Number(id) },
+                include: {
+                    post: true,
+                }
+            })
 
-        if(comment.userId == user.id || comment.post.userId == user.id) return next();
-       }
+            if (comment.userId == user.id || comment.post.userId == user.id) return next();
+        }
 
-       res.status(403).json({message: "You have no access to delete! Unauthorized!"})
+        res.status(403).json({ message: "You have no access to delete! Unauthorized!" })
     }
 }
 
